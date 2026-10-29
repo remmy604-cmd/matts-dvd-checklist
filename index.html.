@@ -1,0 +1,1223 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101827"><title>Matt's Film Star Checklist</title><link rel="manifest" href="manifest.webmanifest"><style>body{margin:0;background:#101827;color:#f5f7fa;font:16px system-ui}header{padding:22px;background:#19263a}h1{margin:0;font-size:23px}main{max-width:700px;margin:auto;padding:16px}button,input,select{font:inherit;border-radius:9px;padding:11px;border:1px solid #53647b}button{background:#24a67b;color:white;border:0;cursor:pointer}input,select{background:#1b2a3d;color:white;max-width:100%;box-sizing:border-box}section{background:#19263a;padding:16px;border-radius:14px;margin-bottom:15px} .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.film{display:flex;align-items:center;gap:10px;border-bottom:1px solid #354256;padding:10px 0}.film label{flex:1}.film small{color:#aab7c8}.muted{color:#aab7c8}.danger{background:#9e4050}.secondary{background:#34465e}input[type=checkbox]{width:22px;height:22px;accent-color:#24a67b}#movies{margin-top:12px}.tiny{font-size:13px}button:focus-visible,input:focus-visible{outline:3px solid #e1ba57}</style></head><body><header><h1>🎬 Matt's Film Star Checklist</h1><div class="muted">Your DVD collection, star by star</div></header><main><section><div class="bar"><select id="star" aria-label="Choose actor"></select><button id="newstar">+ Add star</button></div><p id="stats"></p><div class="bar"><input id="search" placeholder="Search films" aria-label="Search films"><select id="filter"><option value="all">All films</option><option value="missing">Missing</option><option value="owned">Owned</option></select></div></section><section><div class="bar"><input id="year" placeholder="Year" inputmode="numeric" style="width:90px"><input id="title" placeholder="Film title" style="flex:1;min-width:130px"><button id="addfilm">+ Add film</button></div><div id="movies"></div></section><section><strong>Backup and restore</strong><p class="muted tiny">Your ticks are stored in this browser when permitted. Download a backup regularly, especially before clearing browser data or changing phones.</p><div class="bar"><button id="export">Download backup</button><label class="secondary" style="padding:11px;border-radius:9px;cursor:pointer">Restore backup <input type="file" id="import" accept="application/json,.json" hidden></label></div></section></main><script>
+const initial=`1987|Blind Date
+1988|Sunset
+1988|Die Hard
+1989|In Country
+1990|Die Hard 2
+1990|The Bonfire of the Vanities
+1991|Mortal Thoughts
+1991|Hudson Hawk
+1991|The Last Boy Scout
+1992|Death Becomes Her
+1993|Striking Distance
+1994|Pulp Fiction
+1994|Color of Night
+1995|Die Hard with a Vengeance
+1995|12 Monkeys
+1996|Last Man Standing
+1997|The Fifth Element
+1997|The Jackal
+1998|Mercury Rising
+1998|Armageddon
+1998|The Siege
+1999|The Story of Us
+1999|Breakfast of Champions
+1999|The Sixth Sense
+2000|The Whole Nine Yards
+2000|The Kid
+2000|Unbreakable
+2001|Bandits
+2002|Hart's War
+2003|Tears of the Sun
+2004|The Whole Ten Yards
+2005|Hostage
+2005|Sin City
+2006|16 Blocks
+2006|Lucky Number Slevin
+2007|Perfect Stranger
+2007|Live Free or Die Hard
+2009|Surrogates
+2010|Cop Out
+2010|RED
+2011|Catch .44
+2011|Setup
+2012|Looper
+2012|Moonrise Kingdom
+2013|A Good Day to Die Hard
+2013|RED 2
+2014|Sin City: A Dame to Kill For
+2014|The Prince
+2015|Vice
+2015|Extraction
+2016|Marauders
+2016|Precious Cargo
+2017|Once Upon a Time in Venice
+2017|First Kill
+2018|Death Wish
+2018|Acts of Violence
+2018|Reprisal
+2019|Glass
+2019|10 Minutes Gone
+2019|Trauma Center
+2020|Survive the Night
+2020|Hard Kill
+2020|Breach
+2021|Cosmic Sin
+2021|Out of Death
+2021|Survive the Game
+2021|Apex
+2021|Deadlock
+2021|Fortress
+2021|American Siege
+2022|Gasoline Alley
+2022|A Day to Die
+2022|Fortress: Sniper's Eye
+2022|Corrective Measures
+2022|Vendetta
+2022|White Elephant
+2022|Wrong Place
+2022|Wire Room
+2022|Detective Knight: Rogue
+2022|Detective Knight: Redemption
+2022|Paradise City
+2023|Detective Knight: Independence
+2023|Assassin`;
+const eastwoodInitial=`1958|Ambush at Cimarron Pass
+1964|A Fistful of Dollars
+1965|For a Few Dollars More
+1966|The Good, the Bad and the Ugly
+1968|Hang 'Em High
+1968|Coogan's Bluff
+1968|Where Eagles Dare
+1969|Paint Your Wagon
+1970|Two Mules for Sister Sara
+1970|Kelly's Heroes
+1971|The Beguiled
+1971|Play Misty for Me
+1971|Dirty Harry
+1972|Joe Kidd
+1973|High Plains Drifter
+1973|Magnum Force
+1974|Thunderbolt and Lightfoot
+1975|The Eiger Sanction
+1976|The Outlaw Josey Wales
+1976|The Enforcer
+1977|The Gauntlet
+1978|Every Which Way but Loose
+1979|Escape from Alcatraz
+1980|Bronco Billy
+1980|Any Which Way You Can
+1982|Firefox
+1982|Honkytonk Man
+1983|Sudden Impact
+1984|Tightrope
+1984|City Heat
+1985|Pale Rider
+1986|Heartbreak Ridge
+1988|The Dead Pool
+1989|Pink Cadillac
+1990|White Hunter Black Heart
+1990|The Rookie
+1992|Unforgiven
+1993|In the Line of Fire
+1993|A Perfect World
+1995|The Bridges of Madison County
+1997|Absolute Power
+1999|True Crime
+2000|Space Cowboys
+2002|Blood Work
+2004|Million Dollar Baby
+2008|Gran Torino
+2012|Trouble with the Curve
+2018|The Mule
+2021|Cry Macho`;
+const arnoldInitial=`1970|Hercules in New York
+1976|Stay Hungry
+1982|Conan the Barbarian
+1984|Conan the Destroyer
+1984|The Terminator
+1985|Red Sonja
+1985|Commando
+1986|Raw Deal
+1987|The Running Man
+1987|Predator
+1988|Red Heat
+1988|Twins
+1990|Total Recall
+1990|Kindergarten Cop
+1991|Terminator 2: Judgment Day
+1993|Last Action Hero
+1994|True Lies
+1994|Junior
+1996|Eraser
+1996|Jingle All the Way
+1997|Batman & Robin
+1999|End of Days
+2000|The 6th Day
+2002|Collateral Damage
+2003|Terminator 3: Rise of the Machines
+2013|The Last Stand
+2013|Escape Plan
+2014|Sabotage
+2015|Maggie
+2015|Terminator Genisys
+2017|Aftermath
+2017|Killing Gunther
+2019|Terminator: Dark Fate`;
+const denzelInitial=`1981|Carbon Copy
+1984|A Soldier's Story
+1986|Power
+1987|Cry Freedom
+1989|The Mighty Quinn
+1989|For Queen and Country
+1989|Glory
+1990|Mo' Better Blues
+1990|Heart Condition
+1991|Mississippi Masala
+1991|Ricochet
+1992|Malcolm X
+1993|Much Ado About Nothing
+1993|The Pelican Brief
+1993|Philadelphia
+1995|Virtuosity
+1995|Crimson Tide
+1996|Courage Under Fire
+1996|The Preacher's Wife
+1998|Fallen
+1998|He Got Game
+1998|The Siege
+1999|The Bone Collector
+1999|The Hurricane
+2000|Remember the Titans
+2001|Training Day
+2002|John Q
+2002|Antwone Fisher
+2003|Out of Time
+2004|Man on Fire
+2004|The Manchurian Candidate
+2006|Inside Man
+2006|Déjà Vu
+2007|American Gangster
+2007|The Great Debaters
+2009|The Taking of Pelham 123
+2010|The Book of Eli
+2010|Unstoppable
+2012|Safe House
+2012|Flight
+2013|2 Guns
+2014|The Equalizer
+2016|The Magnificent Seven
+2016|Fences
+2017|Roman J. Israel, Esq.
+2018|The Equalizer 2
+2021|The Little Things
+2021|The Tragedy of Macbeth
+2023|The Equalizer 3`;
+const dwayneInitial=`2002|The Scorpion King
+2003|The Rundown
+2004|Walking Tall
+2005|Be Cool
+2005|Doom
+2006|Gridiron Gang
+2007|The Game Plan
+2008|Get Smart
+2009|Race to Witch Mountain
+2010|Tooth Fairy
+2010|Faster
+2011|Fast Five
+2012|Journey 2: The Mysterious Island
+2012|Snitch
+2013|G.I. Joe: Retaliation
+2013|Pain & Gain
+2013|Fast & Furious 6
+2013|Empire State
+2014|Hercules
+2015|Furious 7
+2015|San Andreas
+2016|Central Intelligence
+2017|The Fate of the Furious
+2017|Baywatch
+2017|Jumanji: Welcome to the Jungle
+2018|Rampage
+2018|Skyscraper
+2019|Fighting with My Family
+2019|Fast & Furious Presents: Hobbs & Shaw
+2019|Jumanji: The Next Level
+2021|Jungle Cruise
+2021|Red Notice
+2022|Black Adam
+2025|The Smashing Machine`;
+const gerardInitial=`2000|Dracula 2000
+2004|The Phantom of the Opera
+2004|Dear Frankie
+2005|Beowulf & Grendel
+2006|300
+2007|P.S. I Love You
+2007|Butterfly on a Wheel
+2008|Nim's Island
+2008|RocknRolla
+2009|The Ugly Truth
+2009|Gamer
+2009|Law Abiding Citizen
+2010|The Bounty Hunter
+2011|Machine Gun Preacher
+2011|Coriolanus
+2012|Chasing Mavericks
+2013|Olympus Has Fallen
+2013|Playing for Keeps
+2016|Gods of Egypt
+2016|London Has Fallen
+2016|A Family Man
+2017|Geostorm
+2018|Den of Thieves
+2018|Hunter Killer
+2018|The Vanishing
+2019|Angel Has Fallen
+2020|Greenland
+2022|Last Seen Alive
+2021|Copshop
+2022|The 355
+2023|Plane
+2023|Kandahar
+2024|The Bricklayer
+2025|Den of Thieves 2: Pantera
+2025|How to Train Your Dragon`;
+const harrisonInitial=`1973|American Graffiti
+1977|Star Wars
+1977|Heroes
+1978|Force 10 from Navarone
+1979|Hanover Street
+1979|The Frisco Kid
+1980|The Empire Strikes Back
+1981|Raiders of the Lost Ark
+1982|Blade Runner
+1983|Return of the Jedi
+1984|Indiana Jones and the Temple of Doom
+1985|Witness
+1986|The Mosquito Coast
+1988|Frantic
+1988|Working Girl
+1989|Indiana Jones and the Last Crusade
+1990|Presumed Innocent
+1991|Regarding Henry
+1992|Patriot Games
+1993|The Fugitive
+1994|Clear and Present Danger
+1995|Sabrina
+1997|The Devil's Own
+1997|Air Force One
+1998|Six Days, Seven Nights
+1999|Random Hearts
+2000|What Lies Beneath
+2002|K-19: The Widowmaker
+2003|Hollywood Homicide
+2006|Firewall
+2008|Indiana Jones and the Kingdom of the Crystal Skull
+2009|Crossing Over
+2010|Extraordinary Measures
+2010|Morning Glory
+2011|Cowboys & Aliens
+2013|42
+2013|Ender's Game
+2015|The Age of Adaline
+2015|Star Wars: The Force Awakens
+2017|Blade Runner 2049
+2020|The Call of the Wild
+2023|Indiana Jones and the Dial of Destiny`;
+const stathamInitial=`1998|Lock, Stock and Two Smoking Barrels
+2000|Snatch
+2001|Ghosts of Mars
+2001|The One
+2001|Mean Machine
+2002|The Transporter
+2003|The Italian Job
+2004|Cellular
+2005|Transporter 2
+2005|Revolver
+2005|London
+2006|Crank
+2007|War
+2008|The Bank Job
+2008|In the Name of the King: A Dungeon Siege Tale
+2008|Death Race
+2008|Transporter 3
+2009|Crank: High Voltage
+2010|The Expendables
+2011|The Mechanic
+2011|Blitz
+2011|Killer Elite
+2012|Safe
+2012|The Expendables 2
+2013|Parker
+2013|Hummingbird
+2013|Homefront
+2014|The Expendables 3
+2015|Furious 7
+2015|Wild Card
+2015|Spy
+2016|Mechanic: Resurrection
+2017|The Fate of the Furious
+2018|The Meg
+2019|Fast & Furious Presents: Hobbs & Shaw
+2021|Wrath of Man
+2021|F9
+2023|Operation Fortune: Ruse de Guerre
+2023|Fast X
+2023|Meg 2: The Trench
+2023|Expend4bles
+2024|The Beekeeper
+2025|A Working Man`;
+const vanDammeInitial=`1986|No Retreat, No Surrender
+1988|Bloodsport
+1988|Black Eagle
+1989|Cyborg
+1989|Kickboxer
+1990|Lionheart
+1990|Death Warrant
+1991|Double Impact
+1992|Universal Soldier
+1993|Nowhere to Run
+1993|Hard Target
+1994|Timecop
+1994|Street Fighter
+1995|Sudden Death
+1996|The Quest
+1996|Maximum Risk
+1997|Double Team
+1998|Knock Off
+1998|Legionnaire
+1999|Universal Soldier: The Return
+1999|Inferno
+2001|Replicant
+2001|The Order
+2002|Derailed
+2003|In Hell
+2004|Wake of Death
+2006|Second in Command
+2006|The Hard Corps
+2007|Until Death
+2008|The Shepherd: Border Patrol
+2008|JCVD
+2009|Universal Soldier: Regeneration
+2011|Assassination Games
+2012|Dragon Eyes
+2012|6 Bullets
+2012|The Expendables 2
+2012|Universal Soldier: Day of Reckoning
+2013|Enemies Closer
+2013|Welcome to the Jungle
+2013|Swelter
+2015|Pound of Flesh
+2016|Kickboxer: Vengeance
+2017|Kill 'Em All
+2018|Black Water
+2018|The Bouncer
+2019|We Die Young
+2021|The Last Mercenary
+2024|Darkness of Man
+2025|Kill 'Em All 2`;
+const travoltaInitial=`1976|Carrie
+1977|Saturday Night Fever
+1978|Grease
+1978|Moment by Moment
+1980|Urban Cowboy
+1981|Blow Out
+1983|Staying Alive
+1983|Two of a Kind
+1985|Perfect
+1989|The Experts
+1989|Look Who's Talking
+1990|Look Who's Talking Too
+1991|Shout
+1993|Look Who's Talking Now
+1994|Pulp Fiction
+1995|Get Shorty
+1995|White Man's Burden
+1996|Broken Arrow
+1996|Phenomenon
+1996|Michael
+1997|Face/Off
+1997|Mad City
+1998|Primary Colors
+1998|A Civil Action
+1998|The Thin Red Line
+1999|The General's Daughter
+2000|Battlefield Earth
+2001|Swordfish
+2001|Domestic Disturbance
+2003|Basic
+2004|Ladder 49
+2004|The Punisher
+2005|Be Cool
+2006|Lonely Hearts
+2007|Wild Hogs
+2007|Hairspray
+2009|The Taking of Pelham 123
+2009|Old Dogs
+2010|From Paris with Love
+2012|Savages
+2013|Killing Season
+2014|The Forger
+2015|Criminal Activities
+2016|I Am Wrath
+2016|Life on the Line
+2018|Gotti
+2018|Speed Kills
+2019|Trading Paint
+2019|The Poison Rose
+2019|The Fanatic
+2022|Paradise City
+2023|Mob Land
+2024|Cash Out
+2024|The Clean Up Crew`;
+const keanuInitial=`1986|River's Edge
+1988|Permanent Record
+1988|The Prince of Pennsylvania
+1988|Dangerous Liaisons
+1989|Bill & Ted's Excellent Adventure
+1989|Parenthood
+1990|I Love You to Death
+1990|Tune in Tomorrow
+1991|Point Break
+1991|Bill & Ted's Bogus Journey
+1991|My Own Private Idaho
+1992|Bram Stoker's Dracula
+1993|Much Ado About Nothing
+1993|Little Buddha
+1994|Speed
+1995|Johnny Mnemonic
+1995|A Walk in the Clouds
+1996|Chain Reaction
+1996|Feeling Minnesota
+1997|The Devil's Advocate
+1999|The Matrix
+2000|The Replacements
+2000|The Watcher
+2000|The Gift
+2001|Sweet November
+2001|Hardball
+2003|The Matrix Reloaded
+2003|The Matrix Revolutions
+2003|Something's Gotta Give
+2005|Constantine
+2006|The Lake House
+2006|A Scanner Darkly
+2008|Street Kings
+2008|The Day the Earth Stood Still
+2009|The Private Lives of Pippa Lee
+2010|Henry's Crime
+2013|47 Ronin
+2014|John Wick
+2015|Knock Knock
+2016|Exposed
+2016|The Whole Truth
+2017|To the Bone
+2017|Siberia
+2018|Destination Wedding
+2018|Replicas
+2019|John Wick: Chapter 3 – Parabellum
+2020|Bill & Ted Face the Music
+2021|The Matrix Resurrections
+2023|John Wick: Chapter 4`;
+const neesonInitial=`1981|Excalibur
+1983|Krull
+1984|The Bounty
+1986|The Mission
+1987|Suspect
+1988|The Dead Pool
+1988|High Spirits
+1988|The Good Mother
+1990|Darkman
+1990|Crossing the Line
+1991|Under Suspicion
+1992|Shining Through
+1993|Schindler's List
+1993|Ethan Frome
+1994|Nell
+1995|Rob Roy
+1995|Before and After
+1996|Michael Collins
+1998|Les Misérables
+1999|The Haunting
+2000|Gun Shy
+2002|K-19: The Widowmaker
+2002|Gangs of New York
+2003|Love Actually
+2004|Kinsey
+2005|Batman Begins
+2005|Kingdom of Heaven
+2005|Breakfast on Pluto
+2006|Seraphim Falls
+2007|The List
+2008|Taken
+2008|The Other Man
+2009|Five Minutes of Heaven
+2009|Chloe
+2010|Clash of the Titans
+2010|The A-Team
+2010|The Next Three Days
+2011|Unknown
+2011|The Grey
+2012|Wrath of the Titans
+2012|Battleship
+2012|Taken 2
+2014|Non-Stop
+2014|A Walk Among the Tombstones
+2014|Taken 3
+2015|Run All Night
+2014|A Million Ways to Die in the West
+2016|Silence
+2017|The Commuter
+2017|Mark Felt: The Man Who Brought Down the White House
+2018|Widows
+2019|Cold Pursuit
+2019|Men in Black: International
+2019|Ordinary Love
+2020|Honest Thief
+2021|The Marksman
+2021|The Ice Road
+2021|The Protégé
+2022|Blacklight
+2022|Memory
+2022|Marlowe
+2023|Retribution
+2023|In the Land of Saints and Sinners
+2024|Absolution
+2025|The Naked Gun
+2025|Cold Storage`;
+const wahlbergInitial=`1994|Renaissance Man
+1995|The Basketball Diaries
+1996|Fear
+1997|Boogie Nights
+1997|Traveller
+1998|The Big Hit
+1999|Three Kings
+1999|The Corruptor
+2000|The Perfect Storm
+2000|The Yards
+2001|Planet of the Apes
+2001|Rock Star
+2002|The Truth About Charlie
+2003|The Italian Job
+2004|I Heart Huckabees
+2005|Four Brothers
+2006|Invincible
+2006|The Departed
+2007|Shooter
+2007|We Own the Night
+2008|The Happening
+2008|Max Payne
+2009|The Lovely Bones
+2010|The Other Guys
+2010|The Fighter
+2012|Contraband
+2012|Ted
+2013|Broken City
+2013|Pain & Gain
+2013|2 Guns
+2013|Lone Survivor
+2014|Transformers: Age of Extinction
+2014|The Gambler
+2015|Ted 2
+2015|Daddy's Home
+2016|Deepwater Horizon
+2016|Patriots Day
+2017|Transformers: The Last Knight
+2017|Daddy's Home 2
+2017|All the Money in the World
+2018|Mile 22
+2018|Instant Family
+2020|Spenser Confidential
+2020|Joe Bell
+2021|Infinite
+2022|Uncharted
+2022|Father Stu
+2022|Me Time
+2023|The Family Plan
+2024|Arthur the King
+2024|The Union
+2025|Flight Risk
+2025|Play Dirty`;
+const damonInitial=`1988|Mystic Pizza
+1992|School Ties
+1993|Geronimo: An American Legend
+1996|Courage Under Fire
+1997|Chasing Amy
+1997|The Rainmaker
+1997|Good Will Hunting
+1998|Rounders
+1998|Saving Private Ryan
+1999|Dogma
+1999|The Talented Mr. Ripley
+2000|All the Pretty Horses
+2000|The Legend of Bagger Vance
+2001|Ocean's Eleven
+2002|The Bourne Identity
+2002|Gerry
+2003|Stuck on You
+2004|Ocean's Twelve
+2004|The Bourne Supremacy
+2005|The Brothers Grimm
+2005|Syriana
+2006|The Good Shepherd
+2006|The Departed
+2007|Ocean's Thirteen
+2007|The Bourne Ultimatum
+2009|The Informant!
+2009|Invictus
+2010|Green Zone
+2010|Hereafter
+2010|True Grit
+2011|The Adjustment Bureau
+2011|Contagion
+2011|We Bought a Zoo
+2012|Promised Land
+2013|Elysium
+2013|Behind the Candelabra
+2014|The Monuments Men
+2014|Interstellar
+2015|The Martian
+2016|Jason Bourne
+2016|The Great Wall
+2017|Downsizing
+2017|Suburbicon
+2019|Ford v Ferrari
+2021|Stillwater
+2021|The Last Duel
+2023|Air
+2023|Oppenheimer
+2024|The Instigators
+2024|Drive-Away Dolls`;
+const gibsonInitial=`1977|Summer City
+1979|Mad Max
+1979|Tim
+1981|Gallipoli
+1982|Attack Force Z
+1982|The Year of Living Dangerously
+1984|The Bounty
+1984|The River
+1984|Mrs. Soffel
+1985|Mad Max Beyond Thunderdome
+1987|Lethal Weapon
+1988|Tequila Sunrise
+1989|Lethal Weapon 2
+1990|Bird on a Wire
+1990|Air America
+1990|Hamlet
+1992|Lethal Weapon 3
+1992|Forever Young
+1993|The Man Without a Face
+1994|Maverick
+1995|Braveheart
+1996|Ransom
+1997|Fathers' Day
+1997|Conspiracy Theory
+1998|Lethal Weapon 4
+1999|Payback
+2000|The Patriot
+2000|What Women Want
+2002|We Were Soldiers
+2002|Signs
+2003|The Singing Detective
+2010|Edge of Darkness
+2011|The Beaver
+2012|Get the Gringo
+2014|The Expendables 3
+2016|Blood Father
+2017|Daddy's Home 2
+2018|Dragged Across Concrete
+2019|The Professor and the Madman
+2020|Force of Nature
+2020|Fatman
+2021|Boss Level
+2021|Dangerous
+2022|Last Looks
+2022|Panama
+2022|Agent Game
+2022|Father Stu
+2022|On the Line
+2022|Bandit
+2022|Hot Seat
+2023|Confidential Informant
+2023|Desperation Road
+2024|Boneyard
+2024|Monster Summer`;
+const cageInitial=`1983|Valley Girl
+1984|Racing with the Moon
+1984|Birdy
+1986|Peggy Sue Got Married
+1987|Raising Arizona
+1987|Moonstruck
+1988|Vampire's Kiss
+1989|Time to Kill
+1990|Wild at Heart
+1990|Fire Birds
+1992|Honeymoon in Vegas
+1993|Red Rock West
+1993|Amos & Andrew
+1994|Guarding Tess
+1994|It Could Happen to You
+1994|Trapped in Paradise
+1995|Kiss of Death
+1995|Leaving Las Vegas
+1996|The Rock
+1997|Con Air
+1997|Face/Off
+1998|City of Angels
+1998|Snake Eyes
+1999|8MM
+1999|Bringing Out the Dead
+2000|Gone in 60 Seconds
+2000|The Family Man
+2001|Captain Corelli's Mandolin
+2002|Windtalkers
+2002|Adaptation.
+2003|Matchstick Men
+2004|National Treasure
+2005|Lord of War
+2005|The Weather Man
+2006|The Wicker Man
+2006|World Trade Center
+2007|Ghost Rider
+2007|Next
+2007|National Treasure: Book of Secrets
+2008|Bangkok Dangerous
+2009|Knowing
+2009|Bad Lieutenant: Port of Call New Orleans
+2010|Kick-Ass
+2010|The Sorcerer's Apprentice
+2011|Season of the Witch
+2011|Drive Angry
+2011|Trespass
+2012|Stolen
+2013|The Frozen Ground
+2013|Joe
+2014|Rage
+2014|Left Behind
+2014|Dying of the Light
+2015|The Runner
+2016|The Trust
+2016|USS Indianapolis: Men of Courage
+2016|Dog Eat Dog
+2016|Army of One
+2017|Vengeance: A Love Story
+2017|Inconceivable
+2017|Mom and Dad
+2018|Mandy
+2018|Looking Glass
+2018|Between Worlds
+2019|A Score to Settle
+2019|Primal
+2019|Color Out of Space
+2019|Kill Chain
+2019|Grand Isle
+2019|Running with the Devil
+2020|Jiu Jitsu
+2021|Pig
+2021|Prisoners of the Ghostland
+2021|Willy's Wonderland
+2022|The Unbearable Weight of Massive Talent
+2023|Renfield
+2023|The Retirement Plan
+2023|Dream Scenario
+2023|Sympathy for the Devil
+2023|The Old Way
+2024|Arcadian
+2024|Longlegs
+2024|The Surfer
+2025|The Gunslingers`;
+const seagalInitial=`1988|Above the Law
+1990|Hard to Kill
+1990|Marked for Death
+1991|Out for Justice
+1992|Under Siege
+1994|On Deadly Ground
+1995|Under Siege 2: Dark Territory
+1996|Executive Decision
+1996|The Glimmer Man
+1997|Fire Down Below
+1998|The Patriot
+2001|Exit Wounds
+2001|Ticker
+2002|Half Past Dead
+2003|The Foreigner
+2003|Out for a Kill
+2004|Belly of the Beast
+2004|Out of Reach
+2005|Into the Sun
+2005|Submerged
+2005|Today You Die
+2005|Black Dawn
+2006|Mercenary for Justice
+2006|Shadow Man
+2006|Attack Force
+2007|Flight of Fury
+2007|Urban Justice
+2008|Pistol Whipped
+2008|Kill Switch
+2009|Driven to Kill
+2009|Against the Dark
+2009|The Keeper
+2009|A Dangerous Man
+2010|Machete
+2010|Born to Raise Hell
+2012|Maximum Conviction
+2013|Force of Execution
+2014|A Good Man
+2014|Gutshot Straight
+2015|Absolution
+2016|Code of Honor
+2016|End of a Gun
+2016|Contract to Kill
+2017|Cartels
+2017|China Salesman
+2018|Attrition
+2019|General Commander
+2019|Beyond the Law`;
+const stalloneInitial=`1974|The Lords of Flatbush
+1975|Death Race 2000
+1975|Capone
+1976|Rocky
+1978|F.I.S.T.
+1978|Paradise Alley
+1979|Rocky II
+1981|Nighthawks
+1981|Escape to Victory
+1982|Rocky III
+1982|First Blood
+1984|Rhinestone
+1985|Rambo: First Blood Part II
+1985|Rocky IV
+1986|Cobra
+1987|Over the Top
+1988|Rambo III
+1989|Lock Up
+1989|Tango & Cash
+1990|Rocky V
+1991|Oscar
+1992|Stop! Or My Mom Will Shoot
+1993|Cliffhanger
+1993|Demolition Man
+1994|The Specialist
+1995|Judge Dredd
+1995|Assassins
+1996|Daylight
+1997|Cop Land
+2000|Get Carter
+2001|Driven
+2002|D-Tox
+2002|Avenging Angelo
+2003|Shade
+2006|Rocky Balboa
+2008|Rambo
+2010|The Expendables
+2012|The Expendables 2
+2012|Bullet to the Head
+2013|Escape Plan
+2013|Grudge Match
+2014|The Expendables 3
+2014|Reach Me
+2015|Creed
+2018|Escape Plan 2: Hades
+2018|Creed II
+2018|Backtrace
+2019|Escape Plan: The Extractors
+2019|Rambo: Last Blood
+2022|Samaritan
+2023|Expend4bles`;
+const cruiseInitial=`1981|Taps
+1983|The Outsiders
+1983|Losin' It
+1983|Risky Business
+1985|Legend
+1986|Top Gun
+1986|The Color of Money
+1988|Cocktail
+1988|Rain Man
+1989|Born on the Fourth of July
+1990|Days of Thunder
+1992|Far and Away
+1992|A Few Good Men
+1993|The Firm
+1994|Interview with the Vampire
+1996|Mission: Impossible
+1996|Jerry Maguire
+1999|Eyes Wide Shut
+1999|Magnolia
+2000|Mission: Impossible 2
+2001|Vanilla Sky
+2002|Minority Report
+2003|The Last Samurai
+2004|Collateral
+2005|War of the Worlds
+2006|Mission: Impossible III
+2007|Lions for Lambs
+2008|Tropic Thunder
+2008|Valkyrie
+2010|Knight and Day
+2011|Mission: Impossible – Ghost Protocol
+2012|Rock of Ages
+2012|Jack Reacher
+2013|Oblivion
+2014|Edge of Tomorrow
+2015|Mission: Impossible – Rogue Nation
+2016|Jack Reacher: Never Go Back
+2017|The Mummy
+2017|American Made
+2018|Mission: Impossible – Fallout
+2022|Top Gun: Maverick
+2023|Mission: Impossible – Dead Reckoning Part One
+2025|Mission: Impossible – The Final Reckoning`;
+const dieselInitial=`1997|Strays
+1998|Saving Private Ryan
+2000|Boiler Room
+2000|Pitch Black
+2001|The Fast and the Furious
+2001|Knockaround Guys
+2002|xXx
+2003|A Man Apart
+2004|The Chronicles of Riddick
+2005|The Pacifier
+2006|Find Me Guilty
+2006|The Fast and the Furious: Tokyo Drift
+2008|Babylon A.D.
+2009|Fast & Furious
+2011|Fast Five
+2013|Fast & Furious 6
+2013|Riddick
+2015|Furious 7
+2015|The Last Witch Hunter
+2017|xXx: Return of Xander Cage
+2017|The Fate of the Furious
+2020|Bloodshot
+2021|F9
+2023|Fast X`;
+const wweInitial=`1982|Rocky III|Hulk Hogan
+1987|Predator|Jesse Ventura
+1987|The Running Man|Jesse Ventura
+1989|No Holds Barred|Hulk Hogan
+1991|Suburban Commando|Hulk Hogan
+1993|Mr. Nanny|Hulk Hogan
+1996|Santa with Muscles|Hulk Hogan
+1998|3 Ninjas: High Noon at Mega Mountain|Hulk Hogan
+2004|The Punisher|Kevin Nash
+2004|Blade: Trinity|Triple H
+2005|The Longest Yard|Stone Cold Steve Austin
+2006|See No Evil|Kane
+2006|The Marine|John Cena
+2007|The Condemned|Stone Cold Steve Austin
+2009|12 Rounds|John Cena
+2009|Behind Enemy Lines: Colombia|Mr. Kennedy
+2009|The Marine 2|Ted DiBiase Jr.
+2009|Damage|Stone Cold Steve Austin
+2010|Legendary|John Cena
+2010|Knucklehead|Big Show
+2010|The Expendables|Stone Cold Steve Austin
+2010|The Stranger|Stone Cold Steve Austin
+2010|Hunt to Kill|Stone Cold Steve Austin
+2011|The Chaperone|Triple H
+2011|Inside Out|Triple H
+2011|The Reunion|John Cena
+2011|Bending the Rules|Edge
+2011|Recoil|Stone Cold Steve Austin
+2011|Tactical Force|Stone Cold Steve Austin
+2011|Knockout|Stone Cold Steve Austin
+2012|Maximum Conviction|Stone Cold Steve Austin
+2012|The Man with the Iron Fists|Batista
+2013|The Marine 3: Homefront|The Miz
+2013|12 Rounds 2: Reloaded|Randy Orton
+2013|The Package|Stone Cold Steve Austin
+2014|Guardians of the Galaxy|Batista
+2014|See No Evil 2|Kane
+2014|The Marine 4: Moving Target|The Miz
+2015|Trainwreck|John Cena
+2015|The Condemned 2|Randy Orton
+2015|Heist|Batista
+2015|Spectre|Batista
+2016|The Marine 5: Battleground|The Miz
+2016|Countdown|Dolph Ziggler
+2017|Guardians of the Galaxy Vol. 2|Batista
+2017|Blade Runner 2049|Batista
+2017|The Wall|John Cena
+2017|Bushwick|Batista
+2017|Daddy's Home 2|John Cena
+2018|Blockers|John Cena
+2018|Bumblebee|John Cena
+2018|The Marine 6: Close Quarters|The Miz
+2018|Escape Plan 2: Hades|Batista
+2018|Final Score|Batista
+2019|Stuber|Batista
+2019|Escape Plan: The Extractors|Batista
+2019|Playing with Fire|John Cena
+2020|My Spy|Batista
+2021|The Suicide Squad|John Cena
+2021|Army of the Dead|Batista
+2021|F9|John Cena
+2021|Vacation Friends|John Cena
+2022|Glass Onion: A Knives Out Mystery|Batista
+2023|Knock at the Cabin|Batista
+2023|Guardians of the Galaxy Vol. 3|Batista
+2023|Fast X|John Cena
+2023|Hidden Strike|John Cena
+2023|Freelance|John Cena
+2023|Vacation Friends 2|John Cena
+2024|Argylle|John Cena
+2024|Ricky Stanicky|John Cena
+2024|The Killer's Game|Batista
+2024|My Spy: The Eternal City|Batista
+2024|Jackpot!|John Cena
+2025|The Wrecking Crew|John Cena`;
+const key='matts-film-checklist-v1';let data;try{data=JSON.parse(localStorage.getItem(key))}catch(e){console.warn('Saved data unavailable',e)}if(!data||!Array.isArray(data.stars)||!data.stars.length||!data.stars.every(s=>s&&typeof s.name==='string'&&Array.isArray(s.films)))data={stars:[{name:'Bruce Willis',films:initial.split('\n').map(x=>{const [year,title]=x.split('|');return {year,title,owned:false}})}]};// Add new built-in stars without overwriting existing ownership flags or user-added films.
+if(!data.stars.some(s=>s.name.toLowerCase()==='clint eastwood')){
+ data.stars.push({name:'Clint Eastwood',films:eastwoodInitial.split('\n').map(x=>{const [year,title]=x.split('|');return {year,title,owned:false}})});
+}else{
+ const star=data.stars.find(s=>s.name.toLowerCase()==='clint eastwood');
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of eastwoodInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year)));
+}
+// Merge Arnold's films into an existing saved collection without changing owned ticks.
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='arnold schwarzenegger');
+ if(!star){star={name:'Arnold Schwarzenegger',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of arnoldInitial.split('\n')){
+  const [year,title]=x.split('|');
+  if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false});
+ }
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+// Add Denzel without changing ownership of previously saved films.
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='denzel washington');
+ if(!star){star={name:'Denzel Washington',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of denzelInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='dwayne johnson');
+ if(!star){star={name:'Dwayne Johnson',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of dwayneInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='gerard butler');
+ if(!star){star={name:'Gerard Butler',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of gerardInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='harrison ford');
+ if(!star){star={name:'Harrison Ford',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of harrisonInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='jason statham');
+ if(!star){star={name:'Jason Statham',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of stathamInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='jean-claude van damme');
+ if(!star){star={name:'Jean-Claude Van Damme',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of vanDammeInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='john travolta');
+ if(!star){star={name:'John Travolta',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of travoltaInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='keanu reeves');
+ if(!star){star={name:'Keanu Reeves',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of keanuInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='liam neeson');
+ if(!star){star={name:'Liam Neeson',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of neesonInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='mark wahlberg');
+ if(!star){star={name:'Mark Wahlberg',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of wahlbergInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='matt damon');
+ if(!star){star={name:'Matt Damon',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of damonInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='mel gibson');
+ if(!star){star={name:'Mel Gibson',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of gibsonInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='nicolas cage');
+ if(!star){star={name:'Nicolas Cage',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of cageInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='steven seagal');
+ if(!star){star={name:'Steven Seagal',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of seagalInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='sylvester stallone');
+ if(!star){star={name:'Sylvester Stallone',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of stalloneInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='tom cruise');
+ if(!star){star={name:'Tom Cruise',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of cruiseInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='vin diesel');
+ if(!star){star={name:'Vin Diesel',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of dieselInitial.split('\n')){const [year,title]=x.split('|');if(!existing.has(title.toLowerCase()))star.films.push({year,title,owned:false})}
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+{
+ let star=data.stars.find(s=>s.name.toLowerCase()==='wwe stars');
+ if(!star){star={name:'WWE Stars',films:[]};data.stars.push(star)}
+ const existing=new Set(star.films.map(f=>f.title.toLowerCase()));
+ for(const x of wweInitial.split('\n')){
+  const [year,title,wrestler]=x.split('|');
+  const display=title+' — '+wrestler;
+  if(!existing.has(display.toLowerCase()))star.films.push({year,title:display,owned:false});
+ }
+ star.films.sort((a,b)=>String(a.year).localeCompare(String(b.year))||a.title.localeCompare(b.title));
+}
+let active=Math.max(0,data.stars.findIndex(s=>s.name.toLowerCase()==='wwe stars'));const $=id=>document.getElementById(id);function save(){try{localStorage.setItem(key,JSON.stringify(data))}catch(e){console.warn('Unable to save on this device',e);if(!window.storageWarned){window.storageWarned=true;setTimeout(()=>alert('Your films are visible, but this browser is blocking local storage. Download a backup before ticking off films.'),100)}}}function render(){if(active>=data.stars.length)active=0;$('star').replaceChildren(...data.stars.map((s,i)=>{let o=document.createElement('option');o.value=i;o.textContent=s.name;return o}));$('star').value=active;const s=data.stars[active],n=s.films.filter(f=>f.owned).length;$('stats').textContent=`${n} of ${s.films.length} owned • ${s.films.length-n} missing`;const q=$('search').value.toLowerCase(),filter=$('filter').value;$('movies').replaceChildren();s.films.forEach((f,i)=>{if(!f.title.toLowerCase().includes(q)||(filter==='owned'&&!f.owned)||(filter==='missing'&&f.owned))return;let row=document.createElement('div');row.className='film';let cb=document.createElement('input');cb.type='checkbox';cb.checked=!!f.owned;cb.setAttribute('aria-label','Owned: '+f.title);cb.onchange=()=>{f.owned=cb.checked;save();render()};let label=document.createElement('label');label.textContent=f.title+' ';let year=document.createElement('small');year.textContent=f.year?'('+f.year+')':'';label.append(year);let del=document.createElement('button');del.className='danger';del.textContent='×';del.setAttribute('aria-label','Delete '+f.title);del.onclick=()=>{if(confirm('Remove '+f.title+'?')){s.films.splice(i,1);save();render()}};row.append(cb,label,del);$('movies').append(row)})} $('star').onchange=e=>{active=Number(e.target.value);render()};$('newstar').onclick=()=>{let name=prompt('Actor or actress name?')?.trim();if(!name)return;let found=data.stars.findIndex(s=>s.name.toLowerCase()===name.toLowerCase());if(found>=0){active=found}else{data.stars.push({name,films:[]});active=data.stars.length-1}save();render()};$('addfilm').onclick=()=>{let title=$('title').value.trim(),year=$('year').value.trim();if(!title)return alert('Enter a film title');if(year&&!/^\d{4}$/.test(year))return alert('Use a four-digit year');data.stars[active].films.push({title,year,owned:false});data.stars[active].films.sort((a,b)=>(a.year||'9999').localeCompare(b.year||'9999')||a.title.localeCompare(b.title));$('title').value='';$('year').value='';save();render()};$('filter').onchange=render;$('search').oninput=render;$('export').onclick=()=>{let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='matts-film-checklist-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};$('import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let obj=JSON.parse(await file.text());if(!Array.isArray(obj.stars)||!obj.stars.every(s=>typeof s.name==='string'&&Array.isArray(s.films)&&s.films.every(f=>typeof f.title==='string')))throw Error('Invalid backup');if(confirm('Replace your current lists with this backup?')){data=obj;active=0;save();render()}}catch(err){alert('Could not restore: '+err.message)}e.target.value=''};save();render();/* Standalone HTML version: no service worker registration needed. */
+
+</script></body></html>
